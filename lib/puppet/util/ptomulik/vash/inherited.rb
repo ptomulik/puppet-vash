@@ -124,7 +124,6 @@ module Inherited
     rescue InvalidKeyError, InvalidValueError => err
       raise err.class, err.to_s
     end
-    p array.inspect
     hash = munge_hash(Hash[*array])
     self.class.superclass.instance_method(:replace).bind(self).call(hash)
     self
@@ -136,9 +135,7 @@ module Inherited
     rescue InvalidKeyError, InvalidValueError => err
       raise err.class, err.to_s
     end
-    p array.inspect
     hash = munge_hash(Hash[array])
-    p hash.inspect
     self.class.superclass.instance_method(:replace).bind(self).call(hash)
     self
   end

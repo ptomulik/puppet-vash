@@ -272,7 +272,7 @@ end
 shared_examples "Vash::Validator" do |options|
 
   validator = described_class.new
-  subject! { validator }
+  let!(:subject) { validator }
 
   it { should respond_to :key_exception }
   it { should respond_to :value_exception }

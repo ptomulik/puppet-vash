@@ -5,8 +5,8 @@ shared_examples "Hash" do
   ruby_version = 0;
   RUBY_VERSION.split('.').each{|x| ruby_version <<= 8; ruby_version |= x.to_i}
 
-  let!(:obj)  { Object.new }
-  subject!    { described_class.new }
+  let!(:obj)     { Object.new }
+  let!(:subject) { described_class.new }
 
   [ 
     :==, :[], :[]=, :clear, :default, :default=, :default_proc, :delete,

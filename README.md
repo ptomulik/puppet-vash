@@ -21,20 +21,35 @@ Hash mixin with simple validation and munging.
 
 ## Module Description
 
+TODO:
+
 ## Setup
+
+TODO:
 
 ### What vash affects
 
+TODO:
+
 ### Setup Requirements
+
+TODO:
 
 ### Beginning with vash	
 
+TODO:
+
 ## Usage
+
+TODO:
 
 ## Reference
 
+TODO:
+
 ## Limitations
 
+TODO:
 
 ## Development
 

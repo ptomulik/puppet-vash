@@ -31,7 +31,7 @@ class Vash_Validator_Customized
 end
 
 describe Vash_Validator_Customized do
-  it_behaves_like "Vash::Validator", { 
+  it_behaves_like "Vash::Validator", {
     :valid_keys          => [  0,  -1,'-1', 0.2 ],
     :invalid_keys        => [ 'a', {}, [] ],
     :valid_values        => [  0,  -1,'-1', 0.2 ],
@@ -39,7 +39,7 @@ describe Vash_Validator_Customized do
     :valid_pairs         => [ [1,1], [2,4], [3,9] ],
     :invalid_pairs       => [ [1,2], [2,1] ],
     :valid_items         => [ [2,4], ['3','9'] ],
-    :invalid_items       => [ 
+    :invalid_items       => [
                               [ ['a', 0 ], :key   ],
                               [ ['a','A'], :key   ],
                               [ [ 0, 'A'], :value ],

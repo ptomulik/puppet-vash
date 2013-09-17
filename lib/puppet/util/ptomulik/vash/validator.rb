@@ -50,7 +50,7 @@ module Puppet::Util::PTomulik::Vash
       array2
     end
 
-    def vash_validate_item_array(array) 
+    def vash_validate_item_array(array)
       def each_item_with_index(a)
         i = 0; l = a.length; while i<l do; yield [a[i],i]; i+=1; end
       end

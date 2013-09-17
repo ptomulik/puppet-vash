@@ -65,7 +65,7 @@ RSpec::Matchers.define :be_enumerator_equivalent_to do |expected|
   end
 end
 
-module Puppet; module SharedBehaviours; module PTomulik; module Vash; 
+module Puppet; module SharedBehaviours; module PTomulik; module Vash;
 end; end; end; end
 
 class Puppet::SharedBehaviours::PTomulik::Vash::Hash < ::Hash
@@ -86,7 +86,7 @@ class HashReturnTypes
   def []=(key,val); nil; end # can't predict, it may be munged
   def ==(other); [TrueClass,FalseClass]; end
   def assoc(obj); [Array, NilClass]; end
-  def clear; [@subject_class]; end 
+  def clear; [@subject_class]; end
   def compare_by_identity; [@subject_class]; end
   def compare_by_identity?; [TrueClass, FalseClass]; end
   def default(key=nil); nil; end
@@ -157,7 +157,7 @@ shared_examples 'Vash::Hash::[]' do |_params|
     _arguments_str = _arguments.map{|x| x.inspect}.join(',')
     context "::[#{_arguments_str}]" do
       let(:arguments) { _arguments }
-      begin 
+      begin
         _model_class[*_arguments]
       rescue *_raises => _except
         unless _params[:disable_exception_matching]
@@ -179,7 +179,7 @@ shared_examples 'Vash::Hash::[]' do |_params|
       let(:arguments) { _arguments }
       # note: we test content after [], not the '==' operator; that's why
       # Hash is used here (we use his '==' operator).
-      begin 
+      begin
         _model_class[*_arguments]
       rescue *_raises => _except
         # already done ...
@@ -242,7 +242,7 @@ def invoke(_method, _args, _block)
 end
 
 shared_examples 'Vash::Hash#spec_method:call:check_exception' do
-  it do 
+  it do
     begin
       invoke(model_method,args,block)
     rescue *raises => except
@@ -250,7 +250,7 @@ shared_examples 'Vash::Hash#spec_method:call:check_exception' do
     else
       raise 'spec failed: expected model to raise exception but nothing was raised'
     end
-    expect { invoke(subject_method,args,block) }.to raise_error err, msg 
+    expect { invoke(subject_method,args,block) }.to raise_error err, msg
   end
 end
 
@@ -285,7 +285,7 @@ shared_examples 'Vash::Hash#spec_method:call:check_result' do \
   end
   # for some functions we must ensure, that 'self' is returned
   unless _params[:disable_value_is_self_check]
-    if _expected.equal?(_model) 
+    if _expected.equal?(_model)
       # if model_method returns model, then probably subject_method should
       # return subject (by the "symmetry")
       unless [:to_h, :to_hash].include?(_method) and not _params[:subject].is_a?(Hash)
@@ -307,7 +307,7 @@ shared_examples 'Vash::Hash#spec_method:call' do |_params|
 
   let(:subject)         { _params[:subject].dup }
   let(:model)           { _params[:model].dup }
-  let(:subject_method)  { subject.method(_params[:method]) } 
+  let(:subject_method)  { subject.method(_params[:method]) }
   let(:model_method)    { model.method(_params[:method]) }
   let(:args)            { _args }
   let(:block)           { _block }
@@ -327,7 +327,7 @@ shared_examples 'Vash::Hash#spec_method:call' do |_params|
     # return value
     it { expect { invoke(subject_method,args,block) }.to_not raise_error }
     context "the returned value" do
-      include_examples 'Vash::Hash#spec_method:call:check_result', 
+      include_examples 'Vash::Hash#spec_method:call:check_result',
         _params, _model, _method, _args, _block, _expected
     end
     # attributes
@@ -376,7 +376,7 @@ shared_examples 'Vash::Hash#spec_method:calls' do |_params|
   end
 end
 #
-shared_examples 'Vash::Hash#spec_method' do |_params| 
+shared_examples 'Vash::Hash#spec_method' do |_params|
   _method  = _params[:method]
   _params[:cases].each do |_case|
     context "when self is initialized with #{_case[:subject].inspect}" do
@@ -466,20 +466,20 @@ shared_examples 'Vash::Hash' do |_params|
 
   _model_class = (_params.delete(:model_class) ||
                   Puppet::SharedBehaviours::PTomulik::Vash::Hash).dup
-    
+
   # inject custom methods to the model
   (_params.delete(:methods) || []).each do |_method_sym, _method_proc|
     _model_class.send(:define_method, _method_sym.intern, _method_proc)
   end
 
 
-  [ 
+  [
     :==, :[], :[]=, :clear, :default, :default=, :default_proc, :delete,
     :delete_if, :each, :each_key, :each_pair, :each_value, :empty?, :eql?,
     :fetch, :has_key?, :has_value?, :hash, :include?, :inspect, :invert,
     :key?, :keys, :length, :member?, :merge, :merge!, :rehash,
     :reject!, :reject, :replace,  :select, :shift, :size, :store, :to_a,
-    :to_hash, :to_s, :update, :value?, :values, :values_at 
+    :to_hash, :to_s, :update, :value?, :values, :values_at
   ].each do |method|
     it { should respond_to method }
   end
@@ -504,7 +504,7 @@ shared_examples 'Vash::Hash' do |_params|
   end
 
   _methods_with = {}
-  _methods_with[:no_arg] = [ 
+  _methods_with[:no_arg] = [
     :clear, :delete_if, :each, :each_key, :each_value, :each_pair, :empty?,
     :hash, :inspect, :invert, :keys, :length, :rehash, :reject, :reject!,
     :select, :shift, :size, :to_a, :to_hash, :values
@@ -561,79 +561,79 @@ shared_examples 'Vash::Hash' do |_params|
                     else; _params[:sample_items].first[1]; end
 
   _method_blocks    = {
-    :delete    => [ nil, 
-                    [ proc {|k| _missing_value}, 
+    :delete    => [ nil,
+                    [ proc {|k| _missing_value},
                            "|k| #{_missing_value.inspect}" ] ],
     :delete_if => [ nil,
                     [ proc {|k,v| k ==   _missing_key},
-                           "|k,v| k == #{_missing_key.inspect}" 
+                           "|k,v| k == #{_missing_key.inspect}"
                     ], [
                       proc {|k,v| k ==   _existing_key},
                            "|k,v| k == #{_existing_key.inspect}" ]
                   ],
     :each      => [ nil,
-                    [ 
+                    [
                       proc {|x| x},
-                           "|x| x" 
+                           "|x| x"
                     ],
                   ],
     :each_key  => [ nil,
-                    [ 
+                    [
                       proc {|k| k},
-                           "|k| k" 
+                           "|k| k"
                     ],
                   ],
-                     
+
     :each_pair => [ nil,
-                    [ 
+                    [
                       proc {|k,v| [k,v]},
-                           "|k,v| [k,v]" 
+                           "|k,v| [k,v]"
                     ],
                   ],
     :each_value=> [ nil,
-                    [ 
+                    [
                       proc {|v| v},
-                           "|v| v" 
+                           "|v| v"
                     ],
                   ],
-    :fetch     => [ nil, [ proc {|k| _missing_value}, 
+    :fetch     => [ nil, [ proc {|k| _missing_value},
                                 "|k| #{_missing_value.inspect}" ] ],
     :merge     => [ nil, [ proc {|k,o,n| o },   "|k,o,n| o" ] ],
     :merge!    => [ nil, [ proc {|k,o,n| o },   "|k,o,n| o" ] ],
     :reject    => [ nil,
-                    [ 
+                    [
                       proc {|k,v| k == _existing_key},
-                           "|k,v| k == #{_existing_key.inspect}" 
+                           "|k,v| k == #{_existing_key.inspect}"
                     ],[
                       proc {|k,v| k == _missing_key},
-                           "|k,v| k == #{_missing_key.inspect}" 
+                           "|k,v| k == #{_missing_key.inspect}"
                     ]
                   ],
     :reject!   => [ nil,
-                    [ 
+                    [
                       proc {|k,v| k == _existing_key},
-                           "|k,v| k == #{_existing_key.inspect}" 
+                           "|k,v| k == #{_existing_key.inspect}"
                     ],[
                       proc {|k,v| k == _missing_key},
-                           "|k,v| k == #{_missing_key.inspect}" 
+                           "|k,v| k == #{_missing_key.inspect}"
                     ]
                   ],
     :select    => [ nil,
-                    [ 
+                    [
                       proc {|k,v| k == _existing_key},
-                           "|k,v| k == #{_existing_key.inspect}" 
+                           "|k,v| k == #{_existing_key.inspect}"
                     ],[
                       proc {|k,v| k == _missing_key},
-                           "|k,v| k == #{_missing_key.inspect}" 
+                           "|k,v| k == #{_missing_key.inspect}"
                     ]
                   ],
     :select!   => [ nil,
-                    [ 
+                    [
                       proc {|k,v| k == _existing_key},
-                           "|k,v| k == #{_existing_key.inspect}" 
+                           "|k,v| k == #{_existing_key.inspect}"
                     ],[
                       proc {|k,v| k == _missing_key},
-                           "|k,v| k == #{_missing_key.inspect}" 
+                           "|k,v| k == #{_missing_key.inspect}"
                     ]
                   ],
     :update    => [ nil, [ proc {|k,o,n| o },   "|k,o,n| o" ] ],
@@ -682,7 +682,7 @@ shared_examples 'Vash::Hash' do |_params|
         :hash_initializers        => [],
         :match_attributes         => [:compare_by_identity?],
         :match_attributes_at_end  => [:compare_by_identity?],
-        :disable_value_matching   => true, # we compare by identity! 
+        :disable_value_matching   => true, # we compare by identity!
         :disable_content_matching => true  # we compare by identity!
       }.merge(_params).merge(_params[:compare_by_identity]||{}), []
     end

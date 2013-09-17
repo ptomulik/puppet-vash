@@ -63,7 +63,7 @@ module Puppet::SharedBehaviours::PTomulik::Vash::ValidatorMod
     array2
   end
 
-  def vash_validate_item_array(array) 
+  def vash_validate_item_array(array)
     def each_item_with_index(a)
       i = 0; l = a.length; while i<l do; yield [a[i],i]; i+=1; end
     end
@@ -443,7 +443,7 @@ end
 #         :validator       => described_class.new,
 #         :model           => model_class.new,
 #         :valid_samples   => [ [0,1], [0,2], [1,2] ],
-#         :invalid_samples => [ 
+#         :invalid_samples => [
 #                               [ [:a,  0], :key ],
 #                               [ [:a, :A], :key ],
 #                               [ [ 0, :A], :value ],
@@ -452,7 +452,7 @@ end
 #       }
 #     end
 #
-# The elements in `:invalid_samples` are `[ item, guilty ]` pairs, where 
+# The elements in `:invalid_samples` are `[ item, guilty ]` pairs, where
 # `item = [key,value]` pair and `guilty` tells what is wrong in this item.
 # Possible values for `guilty` are `:key`, `:value`, `:pair` (key and value
 # are correct, but they doesn't form valid pair).
@@ -488,8 +488,8 @@ end
 #      `:item_array` respectively). The `guilty` may be one of `:key`,
 #      `:value` or `:pair` and indicates, what is wrong with the first item
 #      that doesn't pass validation. The `item` is a copy of item that causes
-#      validation to fail. The indices have sense only for `:flat_array` and 
-#      `:item_array`. For `:flat_array` this should be a tuple with indices 
+#      validation to fail. The indices have sense only for `:flat_array` and
+#      `:item_array`. For `:flat_array` this should be a tuple with indices
 #      position indices of key and value for the failing item (this should
 #      be normally `i` and `i+1`, for an item starting at position `i`).
 #      For `:item_array`, this should be one-element array with the index
@@ -559,7 +559,7 @@ shared_examples 'Vash::Validator#vash_validate_input' do |_params|
         it { expect { validate.call(*arguments) }.to_not raise_error }
         it { validate.call(*arguments).should be_an return_type }
         it "size of the returned #{_return_type} should be #{_return_size}" do
-          validate.call(*arguments).size.should == return_size 
+          validate.call(*arguments).size.should == return_size
         end
         it { validate.call(*arguments).should == return_value }
       end
@@ -601,7 +601,7 @@ shared_examples 'Vash::Validator#vash_validate_input' do |_params|
 end
 
 ##############################################################################
-# Test all methods of Puppet::Util::PTomulik::Vash::Validator. 
+# Test all methods of Puppet::Util::PTomulik::Vash::Validator.
 #
 # This is unit test for Puppet::Util::PTomulik::Vash::Validator, but may be
 # used to test customized validators as well. The basic usage is
@@ -672,8 +672,8 @@ shared_examples 'Vash::Validator' do |_params|
 
 
   ######################################
-  # specs for: 
-  #   vash_valid_key?, 
+  # specs for:
+  #   vash_valid_key?,
   #   vash_valid_value?,
   #   vash_valid_pair?
   #
@@ -691,8 +691,8 @@ shared_examples 'Vash::Validator' do |_params|
 
 
   ######################################
-  # specs for: 
-  #   vash_munge_key, 
+  # specs for:
+  #   vash_munge_key,
   #   vash_munge_value,
   #   vash_munge_pair
   #
@@ -709,11 +709,11 @@ shared_examples 'Vash::Validator' do |_params|
   end
 
   ######################################
-  # specs for: 
-  #   vash__key_name, 
+  # specs for:
+  #   vash__key_name,
   #   vash_value_name,
   #   vash_pair_name,
-  #   vash__key_exception, 
+  #   vash__key_exception,
   #   vash_value_exception,
   #   vash_pair_exception,
   #
@@ -743,8 +743,8 @@ shared_examples 'Vash::Validator' do |_params|
   end
 
   ######################################
-  # specs for: 
-  #   vash_validate_key, 
+  # specs for:
+  #   vash_validate_key,
   #   vash_validate_value,
   #   vash_validate_pair
   #
@@ -763,11 +763,11 @@ shared_examples 'Vash::Validator' do |_params|
 
 
   ######################################
-  # specs for: 
-  #   vash_validate_item, 
-  #   vash_validate_hash, 
-  #   vash_validate_flat_array, 
-  #   vash_validate_item_array, 
+  # specs for:
+  #   vash_validate_item,
+  #   vash_validate_hash,
+  #   vash_validate_flat_array,
+  #   vash_validate_item_array,
   #
   [ :item, :hash, :flat_array, :item_array ].each do |_type|
     _method = "vash_validate_#{_type}"

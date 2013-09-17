@@ -78,7 +78,7 @@ module Contained
 
   # Same as {Hash#[]=}
   def []=(key, value)
-    begin 
+    begin
       key,value = vash_validate_item([key, value])
     rescue VashArgumentError => err
       raise err.class, err.to_s
@@ -110,17 +110,17 @@ module Contained
     result = vash_underlying_hash.each(&block)
     block ? self : result
   end
-  
+
   def each_key(&block)
     result = vash_underlying_hash.each_key(&block)
     block ? self : result
   end
-  
+
   def each_pair(&block)
     result = vash_underlying_hash.each_pair(&block)
     block ? self : result
   end
-  
+
   def each_value(&block)
     result = vash_underlying_hash.each_value(&block)
     block ? self : result
@@ -159,7 +159,7 @@ module Contained
       raise err.class, err.to_s
     end
     vash_underlying_hash.merge!(other, &block)
-    self 
+    self
   end
 
   alias_method :update, :merge!

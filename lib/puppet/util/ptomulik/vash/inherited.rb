@@ -20,7 +20,7 @@ module Inherited
   RUBY_VERSION.split('.').each{|x| ruby_version <<= 8; ruby_version |= x.to_i}
 
   def []=(key, value)
-    begin 
+    begin
       key, value = vash_validate_item([key, value])
     rescue Puppet::Util::PTomulik::Vash::VashArgumentError => err
       raise err.class, err.to_s

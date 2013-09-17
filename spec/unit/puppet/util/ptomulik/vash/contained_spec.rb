@@ -33,7 +33,7 @@ describe Vash_Contained do
     :valid_keys     => ['one', 'net_price', 'GrossPrice'],
     :invalid_keys   => [:one, 1, '#$', '' ],
     :valid_items    => [ ['a',1], ['b','2'] ],
-    :invalid_items  => [ 
+    :invalid_items  => [
                          [ ['',      1],     :key],
                          [ ['price', 'one'], :value],
                          [ ['NetPrice', -1], :pair]

@@ -16,7 +16,7 @@ require 'puppet/util/ptomulik'
 #     class MyVash < Hash
 #       include Puppet::Util::PTomulik::Vash::Inherited
 #     end
-#  
+#
 # With the first pattern, the data is keept in an instance variable
 # `@vash_underlying_hash` and you dont have to inherit Hash. In second pattern,
 # the superclass of `MyVash` is used to keep hash data and this superclass

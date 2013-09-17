@@ -1,20 +1,18 @@
-require 'puppet/util/ptomulik/vash'
+require 'spec_helper'
 require 'puppet/util/ptomulik/vash/errors'
 
-module Puppet::Util::PTomulik::Vash
-module Inherited
+module Puppet::SharedBehaviours; module PTomulik; end; end
 
-  require 'forwardable'
-  include ::Enumerable
-  extend ::Forwardable
+module Puppet::SharedBehaviours::PTomulik::Vash
+module InheritedMod
 
-  require 'puppet/util/ptomulik/vash/validator'
-  include Validator
+  require 'unit/puppet/shared_behaviours/ptomulik/vash/validator'
+  include ValidatorMod
 
   def self.included(base)
-    base.extend(ClassMethods)
+    base.extend(ClassMethodsMod)
   end
-  require 'puppet/util/ptomulik/vash/class_methods'
+  require 'unit/puppet/shared_behaviours/ptomulik/vash/class_methods'
 
   ruby_version = 0;
   RUBY_VERSION.split('.').each{|x| ruby_version <<= 8; ruby_version |= x.to_i}
@@ -28,16 +26,13 @@ module Inherited
     self.class.superclass.instance_method(:[]=).bind(self).call(key,value)
   end
 
-  # --
-  # On 1.8 alias_method doesn't play nicely with 'super'
-  # (raises 'no superclass method'), so we don't use it.
-  # ++
   def store(key, value)
     begin 
       key, value = vash_validate_item([key, value])
     rescue Puppet::Util::PTomulik::Vash::VashArgumentError => err
       raise err.class, err.to_s
     end
+    # On 1.8 using 'super' breaks rspec tests :(.
     self.class.superclass.instance_method(:store).bind(self).call(key,value)
   end
 
@@ -58,6 +53,7 @@ module Inherited
     rescue Puppet::Util::PTomulik::Vash::VashArgumentError => err
       raise err.class, err.to_s
     end
+    # On 1.8 using 'super' breaks rspec tests :(.
     self.class.superclass.instance_method(:merge!).bind(self).call(other, &block)
   end
 
@@ -75,6 +71,7 @@ module Inherited
     rescue Puppet::Util::PTomulik::Vash::VashArgumentError => err
       raise err.class, err.to_s
     end
+    # On 1.8 using 'super' breaks rspec tests :(.
     self.class.superclass.instance_method(:replace).bind(self).call(other)
   end
 
@@ -88,6 +85,7 @@ module Inherited
     rescue Puppet::Util::PTomulik::Vash::VashArgumentError => err
       raise err.class, err.to_s
     end
+    # On 1.8 using 'super' breaks rspec tests :(.
     self.class.superclass.instance_method(:update).bind(self).call(other, &block)
   end
 
@@ -102,6 +100,7 @@ module Inherited
       raise err.class, err.to_s
     end
     hash = Hash[*array]
+    # On 1.8 using 'super' breaks rspec tests :(.
     self.class.superclass.instance_method(:replace).bind(self).call(hash)
     self
   end
@@ -113,9 +112,37 @@ module Inherited
       raise err.class, err.to_s
     end
     hash = Hash[array]
+    # On 1.8 using 'super' breaks rspec tests :(.
     self.class.superclass.instance_method(:replace).bind(self).call(hash)
     self
   end
 
 end
+end
+
+class Puppet::SharedBehaviours::PTomulik::Vash::Inherited < ::Hash
+  include Puppet::SharedBehaviours::PTomulik::Vash::InheritedMod
+end
+
+require 'unit/puppet/shared_behaviours/ptomulik/vash/hash'
+shared_examples 'Vash::Inherited' do |_params|
+  _sample_items = (_params[:valid_items] || []) +
+                  (_params[:invalid_items] || []).map{|item,guilty| item}
+  _params = {
+    :sample_items => _sample_items,
+    :hash_initializers => [_params[:valid_items]] || [],
+    :model_class  => Puppet::SharedBehaviours::PTomulik::Vash::Inherited,
+    # method exceptions
+    :class_sqb=> { :raises=>[Puppet::Util::PTomulik::Vash::VashArgumentError, ArgumentError]},
+    :[]=      => { :raises=>[Puppet::Util::PTomulik::Vash::VashArgumentError] },
+    :store    => { :raises=>[Puppet::Util::PTomulik::Vash::VashArgumentError] },
+    :replace  => { :raises=>[Puppet::Util::PTomulik::Vash::VashArgumentError] },
+    :merge    => { :raises=>[Puppet::Util::PTomulik::Vash::VashArgumentError] },
+    :merge!   => { :raises=>[Puppet::Util::PTomulik::Vash::VashArgumentError] },
+    :update   => { :raises=>[Puppet::Util::PTomulik::Vash::VashArgumentError] },
+    :replace_with_flat_array => { :raises=>[Puppet::Util::PTomulik::Vash::VashArgumentError] },
+    :replace_with_item_array => { :raises=>[Puppet::Util::PTomulik::Vash::VashArgumentError] },
+  }.merge(_params)
+  include_examples 'Vash::Validator', _params
+  include_examples 'Vash::Hash', _params
 end

@@ -10,3 +10,6 @@ spec/fixtures
 *.bkp
 *.bak
 *~
+.yard/
+.yardoc/
+doc/

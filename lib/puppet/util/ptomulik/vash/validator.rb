@@ -1,176 +1,100 @@
-require 'puppet/util/ptomulik'
+require 'puppet/util/ptomulik/vash'
 
 module Puppet::Util::PTomulik::Vash
 
-  class InvalidKeyError < ::ArgumentError; end
-  class InvalidValueError < ::ArgumentError; end
-  class InvalidPairError < ::ArgumentError; end
-  class OddArgNoError < ::ArgumentError; end
-
   module Validator
 
-    def key_exception(i, key)
-      msg  = "invalid key #{key.inspect}"
-      msg += " at index #{i}" unless i.nil?
+    def vash_valid_key?(key); true; end
+    def vash_valid_value?(value); true; end
+    def vash_valid_pair?(pair); true; end
+    def vash_munge_key(key); key; end
+    def vash_munge_value(val); val; end
+    def vash_munge_pair(pair); pair; end
+    def vash_key_name(*args); 'key'; end
+    def vash_value_name(*args); 'value'; end
+    def vash_pair_name(*args); '(key,value) combination'; end
+
+    def vash_validate_key(key,*args)
+      raise *(vash_key_exception(key,*args)) unless vash_valid_key?(key)
+      vash_munge_key(key)
+    end
+
+    def vash_validate_value(val,*args)
+      raise *(vash_value_exception(val,*args)) unless vash_valid_value?(val)
+      vash_munge_value(val)
+    end
+
+    def vash_validate_pair(pair,*args)
+      raise *(vash_pair_exception(pair,*args)) unless vash_valid_pair?(pair)
+      vash_munge_pair(pair)
+    end
+
+    def vash_validate_item(item,*args)
+      k = vash_validate_key(*vash_select_key_args(item,*args))
+      v = vash_validate_value(*vash_select_value_args(item,*args))
+      vash_validate_pair(*vash_select_pair_args([k,v],*args))
+    end
+
+    def vash_validate_hash(hash)
+      Hash[hash.map { |item| vash_validate_item(item) }]
+    end
+
+    def vash_validate_flat_array(array)
+      def each_item_with_index(a)
+        i = 0; l = a.length-1; while i<l do; yield [a[i,2],i]; i+=2; end
+      end
+      array2 = Array.new(array.length) # pre-allocate
+      each_item_with_index(array) do |item,i|
+        array2[i,2] = vash_validate_item(item,i,i+1)
+      end
+      array2
+    end
+
+    def vash_validate_item_array(array) 
+      def each_item_with_index(a)
+        i = 0; l = a.length; while i<l do; yield [a[i],i]; i+=1; end
+      end
+      array2 = Array.new(array.length) # pre-allocate
+      each_item_with_index(array) do |item,i|
+        array2[i] = vash_validate_item(item,i)
+      end
+      array2
+    end
+
+
+    def vash_key_exception(key, *args)
+      name = vash_key_name(key,*args)
+      msg  = "invalid #{name} #{key.inspect}"
+      msg += " at index #{args[0]}" unless args[0].nil?
+      msg += " (with value #{args[1].inspect})" unless args.length < 2
       [InvalidKeyError, msg]
     end
 
-    def value_exception(i, value, *args)
-      msg  = "invalid value #{value.inspect}"
-      msg += " at index #{i}" unless i.nil?
-      msg += " at key #{args[0].inspect}" unless args.empty?
+    def vash_value_exception(value, *args)
+      name = vash_value_name(value,*args)
+      msg  = "invalid #{name} #{value.inspect}"
+      msg += " at index #{args[0]}" unless args[0].nil?
+      msg += " at key #{args[1].inspect}" unless args.length < 2
       [InvalidValueError, msg]
     end
 
-    def pair_exception(i, key, value)
-      msg  = "invalid (key,value) pair (#{key.inspect},#{value.inspect})"
-      msg += " at index #{i}" unless i.nil?
+    def vash_pair_exception(pair, *args)
+      name =  vash_pair_name(pair,*args)
+      msg  = "invalid #{name} (#{pair.map{|x| x.inspect}.join(',')})"
+      msg += " at index #{args[0]}" unless args[0].nil?
       [InvalidPairError, msg]
     end
 
-    def validate_key(key)
-      if respond_to?(:valid_key?)
-        raise *(key_exception(nil,key)) unless valid_key?(key)
-      end
-      true
+    def vash_select_key_args(item, *indices)
+      indices.all?{|i| i.nil?}  ? item[0,1] : [item[0], indices[0]]
     end
 
-    def validate_value(value)
-      if respond_to?(:valid_value?)
-        raise *(value_exception(nil,value)) unless valid_value?(value)
-      end
-      true
+    def vash_select_value_args(item, *indices)
+      indices.all?{|i| i.nil?} ? [item[1],nil,item[0]] : [item[1],indices.last]
     end
 
-    def validate_pair(key, value)
-      if respond_to?(:valid_pair?)
-        raise *(pair_exception(nil,key,value)) unless valid_pair?(key,value)
-      end
-      true
-    end
-
-    def validate_item(key, value)
-      validate_key(key)
-      validate_value(value)
-      validate_pair(key,value)
-    end
-
-    def validate_hash(hash)
-      if respond_to?(:valid_key?) and respond_to?(:valid_value?)
-        hash.each_pair do |key, value| 
-          raise *(key_exception(nil,key)) unless valid_key?(key)
-          raise *(value_exception(nil,value,key)) unless valid_value?(value)
-        end
-      elsif respond_to?(:valid_key?) 
-        hash.each_key do |key| 
-          raise *(key_exception(nil,key)) unless valid_key?(key)
-        end
-      elsif respond_to?(:valid_value?)
-        hash.each_pair do |key, value|
-          raise *(value_exception(nil,value,key)) unless valid_value?(value)
-        end
-      end
-      if respond_to?(:valid_pair?)
-        hash.each_pair do |key, value| 
-          raise *(pair_exception(nil,key,value)) unless valid_pair?(key,value)
-        end
-      end
-      true
-    end
-
-    def validate_flat_array(array)
-      def each_even(a)
-        i = 0; l = a.length-1; while i<l do; yield [i,a[i]]; i+=2; end
-      end
-      def each_odd(a)
-        i = 1; l = a.length; while i<l do; yield [i,a[i]]; i+=2; end
-      end
-      def each_even_odd(a)
-        i = 0; l = a.length-1; while i<l do; yield [i,a[i],a[i+1]]; i+=2; end
-      end
-      if (respond_to?(:valid_key?) or respond_to?(:valid_value?) or
-          respond_to?(:valid_pair?)) and (array.length % 2) != 0
-        raise OddArgNoError, "odd number of arguments for Vash"
-      end
-      if respond_to?(:valid_key?) and respond_to?(:valid_value?)
-        each_even_odd(array) do |i,key,value|
-          raise *(key_exception(i,key)) unless valid_key?(key)
-          raise *(value_exception(i+1,value)) unless valid_value?(value)
-        end
-      elsif respond_to?(:valid_key?)
-        each_even(array) do |i,key|
-          raise *(key_exception(i,key)) unless valid_key?(key)
-        end
-      elsif respond_to?(:valid_value?)
-        each_odd(array) do |i,value|
-          raise *(value_exception(i,value)) unless valid_value?(value)
-        end
-      end
-      if respond_to?(:valid_pair?)
-        each_even_odd(array) do |i,key,value|
-          raise *(pair_exception(i,key,value)) unless valid_pair?(key,value)
-        end
-      end
-      true
-    end
-
-    def validate_item_array(array) 
-      def each_index_pair(a)
-        i = 0; l = a.length; while i<l do; yield [i,a[i][0],a[i][1]]; i+=1; end
-      end
-      if respond_to?(:valid_key?) and respond_to?(:valid_value?)
-        each_index_pair(array) do |i,key,value|
-          raise *(key_exception(i,key)) unless valid_key?(key)
-          raise *(value_exception(i,value)) unless valid_value?(value)
-        end
-      elsif respond_to? :valid_key?
-        each_index_pair(array) do |i,key,value|
-          raise *(key_exception(i,key)) unless valid_key?(key)
-        end
-      elsif respond_to?(:valid_value?)
-        each_index_pair(array) do |i,key,value|
-          raise *(value_exception(i,value)) unless valid_value?(value)
-        end
-      end
-      if respond_to?(:valid_pair?)
-        each_index_pair(array) do |i,key,value|
-          raise *(pair_exception(i,key,value)) unless valid_pair?(key,value)
-        end
-      end
-      true
-    end
-
-    def munge_hash(hash)
-      if respond_to? :munge_key and respond_to? :munge_value
-        if respond_to? :munge_pair
-          Hash[hash.map{|k,v| munge_pair(munge_key(k), munge_value(v))}]
-        else
-          Hash[hash.map{|k,v| [munge_key(k), munge_value(v)]}]
-        end
-      elsif respond_to? :munge_key
-        if respond_to? :munge_pair
-          Hash[hash.map{|k,v| munge_pair(munge_key(k), v)}]
-        else
-          Hash[hash.map{|k,v| [munge_key(k), v]}]
-        end
-      elsif respond_to? :munge_value
-        if respond_to? :munge_pair
-          Hash[hash.map{|k,v| munge_pair(k, munge_value(v))}]
-        else
-          Hash[hash.map{|k,v| [k, munge_value(v)]}]
-        end
-      elsif respond_to? :munge_pair
-        Hash[hash.map{|k,v| munge_pair(k,v)}]
-      else
-        hash
-      end
-    end
-
-    def munge_item(key, value)
-      key = respond_to?(:munge_key) ? munge_key(key) : key
-      value = respond_to?(:munge_value) ? munge_value(value) : value
-      key, value = munge_pair(key,value) if respond_to?(:munge_pair)
-      [key, value]
+    def vash_select_pair_args(item, *indices)
+      [item, *indices]
     end
   end
 end

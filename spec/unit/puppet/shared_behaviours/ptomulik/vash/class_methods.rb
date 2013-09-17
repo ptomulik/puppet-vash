@@ -1,7 +1,8 @@
-require 'puppet/util/ptomulik/vash'
 require 'puppet/util/ptomulik/vash/errors'
 
-module Puppet::Util::PTomulik::Vash
+module Puppet::SharedBehaviours; module PTomulik; module Vash; end; end; end
+ 
+module Puppet::SharedBehaviours::PTomulik::Vash
 
   # Class methods for {Puppet:Util::PTomulik::Vash::Contained}
   # and {Puppet::Util::PTomulik::Vash::Inherited}. 
@@ -19,7 +20,7 @@ module Puppet::Util::PTomulik::Vash
   #
   # The abovementioned methods are also responsible for input validation and
   # munging.
-  module ClassMethods
+  module ClassMethodsMod
 
     # Same as Hash::[] but with input validation.
     def [](*args)
@@ -36,10 +37,14 @@ module Puppet::Util::PTomulik::Vash
             obj.replace(Hash[args[0]])
           end
         end
-      rescue VashArgumentError => err
+      rescue Puppet::Util::PTomulik::Vash::VashArgumentError => err
         raise err.class, err.to_s
       end
       obj
     end
   end
+end
+
+class Puppet::SharedBehaviours::PTomulik::Vash::ClassMethods
+  extend Puppet::SharedBehaviours::PTomulik::Vash::ClassMethodsMod
 end

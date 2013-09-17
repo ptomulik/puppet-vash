@@ -1,19 +1,19 @@
-require 'puppet/util/ptomulik/vash'
+require 'spec_helper'
 require 'puppet/util/ptomulik/vash/errors'
 
-module Puppet::Util::PTomulik::Vash
-module Contained
+module Puppet::SharedBehaviours; module PTomulik; end; end
 
-  include ::Enumerable
+module Puppet::SharedBehaviours::PTomulik::Vash
+module ContainedMod
 
-  require 'puppet/util/ptomulik/vash/validator'
-  include Validator
+  require 'unit/puppet/shared_behaviours/ptomulik/vash/validator'
+  include ValidatorMod
 
   # @api private
   def self.included(base)
-    base.extend(ClassMethods)
+    base.extend(ClassMethodsMod)
   end
-  require 'puppet/util/ptomulik/vash/class_methods'
+  require 'unit/puppet/shared_behaviours/ptomulik/vash/class_methods'
 
   # @api private
   def vash_underlying_hash
@@ -80,7 +80,7 @@ module Contained
   def []=(key, value)
     begin 
       key,value = vash_validate_item([key, value])
-    rescue VashArgumentError => err
+    rescue Puppet::Util::PTomulik::Vash::VashArgumentError => err
       raise err.class, err.to_s
     end
     vash_underlying_hash[key] = value
@@ -155,7 +155,7 @@ module Contained
   def merge!(other, &block)
     begin
       other = vash_validate_hash(other)
-    rescue VashArgumentError => err
+    rescue Puppet::Util::PTomulik::Vash::VashArgumentError => err
       raise err.class, err.to_s
     end
     vash_underlying_hash.merge!(other, &block)
@@ -168,7 +168,7 @@ module Contained
   def merge(other, &block)
     begin
       self.dup.merge!(other, &block)
-    rescue VashArgumentError => err
+    rescue Puppet::Util::PTomulik::Vash::VashArgumentError => err
       raise err.class, err.to_s
     end
   end
@@ -188,7 +188,7 @@ module Contained
   def replace(other)
     begin
       other = vash_validate_hash(other)
-    rescue VashArgumentError => err
+    rescue Puppet::Util::PTomulik::Vash::VashArgumentError => err
       raise err.class, err.to_s
     end
     vash_underlying_hash.replace(other)
@@ -223,7 +223,7 @@ module Contained
   def replace(other)
     begin
       other = vash_validate_hash(other)
-    rescue VashArgumentError => err
+    rescue Puppet::Util::PTomulik::Vash::VashArgumentError => err
       raise err.class, err.to_s
     end
     vash_underlying_hash.replace(other)
@@ -244,7 +244,7 @@ module Contained
   def replace_with_flat_array(array)
     begin
       array = vash_validate_flat_array(array)
-    rescue VashArgumentError => err
+    rescue Puppet::Util::PTomulik::Vash::VashArgumentError => err
       raise err.class, err.to_s
     end
     vash_underlying_hash.replace(Hash[*array])
@@ -261,12 +261,38 @@ module Contained
   def replace_with_item_array(array)
     begin
       array = vash_validate_item_array(array)
-    rescue VashArgumentError => err
+    rescue Puppet::Util::PTomulik::Vash::VashArgumentError => err
       raise err.class, err.to_s
     end
     vash_underlying_hash.replace(Hash[array])
     self
   end
-
 end
+end
+
+class Puppet::SharedBehaviours::PTomulik::Vash::Contained
+  include Puppet::SharedBehaviours::PTomulik::Vash::ContainedMod
+end
+
+require 'unit/puppet/shared_behaviours/ptomulik/vash/hash'
+shared_examples 'Vash::Contained' do |_params|
+  _sample_items = (_params[:valid_items] || []) +
+                  (_params[:invalid_items] || []).map{|item,guilty| item}
+  _params = {
+    :sample_items => _sample_items,
+    :hash_initializers => [_params[:valid_items]] || [],
+    :model_class  => Puppet::SharedBehaviours::PTomulik::Vash::Contained,
+    # method exceptions
+    :class_sqb=> { :raises=>[Puppet::Util::PTomulik::Vash::VashArgumentError, ArgumentError]},
+    :[]=      => { :raises=>[Puppet::Util::PTomulik::Vash::VashArgumentError] },
+    :store    => { :raises=>[Puppet::Util::PTomulik::Vash::VashArgumentError] },
+    :replace  => { :raises=>[Puppet::Util::PTomulik::Vash::VashArgumentError] },
+    :merge    => { :raises=>[Puppet::Util::PTomulik::Vash::VashArgumentError] },
+    :merge!   => { :raises=>[Puppet::Util::PTomulik::Vash::VashArgumentError] },
+    :update   => { :raises=>[Puppet::Util::PTomulik::Vash::VashArgumentError] },
+    :replace_with_flat_array => { :raises=>[Puppet::Util::PTomulik::Vash::VashArgumentError] },
+    :replace_with_item_array => { :raises=>[Puppet::Util::PTomulik::Vash::VashArgumentError] },
+  }.merge(_params)
+  include_examples 'Vash::Validator', _params
+  include_examples 'Vash::Hash', _params
 end

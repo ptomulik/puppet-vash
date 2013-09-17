@@ -83,7 +83,7 @@ class HashReturnTypes
   end
 
   def [](key); nil; end
-  def []=(key,val); [val.class]; end
+  def []=(key,val); nil; end # can't predict, it may be munged
   def ==(other); [TrueClass,FalseClass]; end
   def assoc(obj); [Array, NilClass]; end
   def clear; [@subject_class]; end 
@@ -122,11 +122,15 @@ class HashReturnTypes
   def reject(&block); (block ? [@subject_class] : [enumerator_class]); end
   def reject!(&block); (block ? [@subject_class,NilClass] : [enumerator_class]); end
   def replace(other); [@subject_class]; end
-  def select(&block); (block ? [@subject_class] : [enumerator_class]); end
+  if ruby_version >= 0x010901
+  def select(&block); (block ? [Hash] : [enumerator_class]); end
+  else
+  def select(&block); (block ? [Hash,Array] : [enumerator_class]); end
+  end
   def select!(&block); (block ? [@subject_class,NilClass] : [enumerator_class]); end
   def shift; nil; end
   def size; [Fixnum]; end
-  def store(key,val); nil; end
+  def store(key,val); nil; end # don't predict, it may be munged!
   def to_a; [Array]; end
   def to_h; [Hash]; end
   def to_hash; [(@subject_class<=Hash) ? @subject_class : Hash]; end
@@ -141,11 +145,10 @@ end
 shared_examples 'Vash::Hash::[]' do |_params|
 
   _model_class    = _params[:model_class]
-  _initializers   = [ [], [{}], [[]] ]
-  _initializers1  = _params[:hash_initializers] || [_params[:sample_items]] || []
-  _initializers  += _initializers1.map{|obj| [obj.to_a]} + 
-                    _initializers1.map{|obj| [Hash[obj]]} +
-                    _initializers1.map{|obj| obj.to_a.flatten}
+  _initializers   = [ [], [{}], [[]] ] +
+                    _params[:hash_arguments].map{|h| [Hash[h]]} +
+                    _params[:hash_arguments].map{|h| [h.to_a]} +
+                    _params[:hash_arguments].map{|h| h.to_a.flatten}
 
   let(:model_class) { _model_class }
 
@@ -181,8 +184,11 @@ shared_examples 'Vash::Hash::[]' do |_params|
       rescue *_raises => _except
         # already done ...
       else
+        # note: we can't initialize right_hash as Hash[ *arguments ]
+        # because we may have munging enabled!
+        # we convert to hash, to use its == operator: our must be tested first!
         let(:left_hash)  { Hash[ described_class[*arguments] ] }
-        let(:right_hash) { Hash[ *arguments ]}
+        let(:right_hash) { Hash[ model_class[*arguments] ]}
         it { left_hash.should ==right_hash }
       end
     end
@@ -500,8 +506,8 @@ shared_examples 'Vash::Hash' do |_params|
   _methods_with = {}
   _methods_with[:no_arg] = [ 
     :clear, :delete_if, :each, :each_key, :each_value, :each_pair, :empty?,
-    :hash, :inspect, :invert, :keys, :length, :rehash, :shift, :size, :to_a,
-    :to_hash, :values
+    :hash, :inspect, :invert, :keys, :length, :rehash, :reject, :reject!,
+    :select, :shift, :size, :to_a, :to_hash, :values
   ]
   _methods_with[:key_arg] = [
     :[], :delete, :fetch, :has_key?, :include?, :key?, :member?
@@ -517,9 +523,13 @@ shared_examples 'Vash::Hash' do |_params|
   ]
 
   if ruby_version >= 0x010901
+    _methods_with[:no_arg]    += [ :flatten ]
     _methods_with[:key_arg]   += [ :assoc, :rassoc ]
     _methods_with[:value_arg] += [ :key ]
-    _methods_with[:no_arg]    += [ :flatten ]
+  end
+
+  if ruby_version >= 0x010903
+    _methods_with[:no_arg]    += [ :select! ]
   end
 
   if ruby_version >= 0x020000
@@ -551,39 +561,36 @@ shared_examples 'Vash::Hash' do |_params|
                     else; _params[:sample_items].first[1]; end
 
   _method_blocks    = {
-    :delete    => [ [ proc {|k| _missing_value}, 
+    :delete    => [ nil, 
+                    [ proc {|k| _missing_value}, 
                            "|k| #{_missing_value.inspect}" ] ],
-    :delete_if => [ 
+    :delete_if => [ nil,
                     [ proc {|k,v| k ==   _missing_key},
                            "|k,v| k == #{_missing_key.inspect}" 
                     ], [
                       proc {|k,v| k ==   _existing_key},
                            "|k,v| k == #{_existing_key.inspect}" ]
                   ],
-    :each      => [ 
-                    nil,
+    :each      => [ nil,
                     [ 
                       proc {|x| x},
                            "|x| x" 
                     ],
                   ],
-    :each_key  => [ 
-                    nil,
+    :each_key  => [ nil,
                     [ 
                       proc {|k| k},
                            "|k| k" 
                     ],
                   ],
                      
-    :each_pair => [ 
-                    nil,
+    :each_pair => [ nil,
                     [ 
                       proc {|k,v| [k,v]},
                            "|k,v| [k,v]" 
                     ],
                   ],
-    :each_value=> [ 
-                    nil,
+    :each_value=> [ nil,
                     [ 
                       proc {|v| v},
                            "|v| v" 
@@ -593,7 +600,7 @@ shared_examples 'Vash::Hash' do |_params|
                                 "|k| #{_missing_value.inspect}" ] ],
     :merge     => [ nil, [ proc {|k,o,n| o },   "|k,o,n| o" ] ],
     :merge!    => [ nil, [ proc {|k,o,n| o },   "|k,o,n| o" ] ],
-    :reject    => [ 
+    :reject    => [ nil,
                     [ 
                       proc {|k,v| k == _existing_key},
                            "|k,v| k == #{_existing_key.inspect}" 
@@ -602,7 +609,7 @@ shared_examples 'Vash::Hash' do |_params|
                            "|k,v| k == #{_missing_key.inspect}" 
                     ]
                   ],
-    :reject!   => [ 
+    :reject!   => [ nil,
                     [ 
                       proc {|k,v| k == _existing_key},
                            "|k,v| k == #{_existing_key.inspect}" 
@@ -611,7 +618,7 @@ shared_examples 'Vash::Hash' do |_params|
                            "|k,v| k == #{_missing_key.inspect}" 
                     ]
                   ],
-    :select    => [ 
+    :select    => [ nil,
                     [ 
                       proc {|k,v| k == _existing_key},
                            "|k,v| k == #{_existing_key.inspect}" 
@@ -620,7 +627,7 @@ shared_examples 'Vash::Hash' do |_params|
                            "|k,v| k == #{_missing_key.inspect}" 
                     ]
                   ],
-    :select!   => [ 
+    :select!   => [ nil,
                     [ 
                       proc {|k,v| k == _existing_key},
                            "|k,v| k == #{_existing_key.inspect}" 

@@ -102,8 +102,8 @@ module ContainedMod
 
   # Same as {Hash#delete_if}
   def delete_if(&block)
-    vash_underlying_hash.delete_if(&block)
-    self
+    result = vash_underlying_hash.delete_if(&block)
+    block ? self : result
   end
 
   def each(&block)
@@ -175,13 +175,14 @@ module ContainedMod
 
   # Same as {Hash#reject}
   def reject(&block)
+    # note, using original 'reject' is more difficult here.
     self.dup.delete_if(&block)
   end
 
   # Same as {Hash#reject!}
   def reject!(&block)
-    return nil if vash_underlying_hash.reject!(&block).nil?
-    self
+    return nil if (result = vash_underlying_hash.reject!(&block)).nil?
+    block ? self : result
   end
 
   # Same as {Hash#replace}
@@ -195,39 +196,30 @@ module ContainedMod
     self
   end
 
-  if ruby_version < 0x010901
   # Similar to {Hash#select}
-  # @note There is difference between this select and {Hash#select} on 
-  # ruby < 1.9.1. The {Hash#select} returns an array whereas this method
-  # returns a new Vash object. The behavior of {Hash#select} changes in 
-  # ruby 1.9.1 such that it also returns a hash.
-  def select(&block)
-    self.dup.delete_if {|k,v| ! block.call(k,v) }
-  end
+  # @note On ruby  1.8. the {Hash#select} returns an array (or enumerator)
+  # and on 1.9.1+ returns hash (or enumerator). We always return hash or
+  # an enumerator.
+  #
+  # Note, that for standard Hash and its subclasses we have
+  # select{...}.class == Hash on ruby 1.9+.
+  if ruby_version >= 0x010901
+    def select(&block)
+      vash_underlying_hash.select(&block)
+    end
   else
-  # Same as {Hash#select}
-  def select(&block)
-    self.dup.keep_if(&block)
-  end
+    def select(&block)
+      result = vash_underlying_hash.select(&block)
+      block ? Hash[result] : result
+    end
   end
 
   if ruby_version >= 0x010903
   # Same as {Hash#select!}
   def select!(&block)
-    return nil if vash_underlying_hash.select!(&block).nil?
-    self
+    return nil if (result = vash_underlying_hash.select!(&block)).nil?
+    block ? self : result
   end
-  end
-
-  # Same as {Hash#replace}
-  def replace(other)
-    begin
-      other = vash_validate_hash(other)
-    rescue Puppet::Util::PTomulik::Vash::VashArgumentError => err
-      raise err.class, err.to_s
-    end
-    vash_underlying_hash.replace(other)
-    self
   end
 
   #
@@ -276,8 +268,8 @@ end
 
 require 'unit/puppet/shared_behaviours/ptomulik/vash/hash'
 shared_examples 'Vash::Contained' do |_params|
-  _sample_items = (_params[:valid_items] || []) +
-                  (_params[:invalid_items] || []).map{|item,guilty| item}
+  _sample_items =  (_params[:valid_items] || []) +
+                   (_params[:invalid_items] || []).map{|item, guilty| item}
   _params = {
     :sample_items => _sample_items,
     :hash_initializers => [_params[:valid_items]] || [],

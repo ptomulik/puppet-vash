@@ -1,6 +1,8 @@
 # ptomulik-vash
 
 [![Build Status](https://travis-ci.org/ptomulik/puppet-vash.png?branch=master)](https://travis-ci.org/ptomulik/puppet-vash)
+[![Coverage Status](https://coveralls.io/repos/ptomulik/puppet-vash/badge.png)](https://coveralls.io/r/ptomulik/puppet-vash)
+[![Code Climate](https://codeclimate.com/github/ptomulik/puppet-vash.png)](https://codeclimate.com/github/ptomulik/puppet-vash)
 
 #### Table of Contents
 
@@ -442,7 +444,7 @@ end
   parameter may be a Hash or an array of items (array of 2-element arrays),
 * *missing_key* (required) - an example key that is not in *sample_items*,
 * *missing_value* (required) - an example value that is not in *sample_items*,
-* *hash_arguments* (requirer) - an array of hashes used as arguments to some
+* *hash_arguments* (required) - an array of hashes used as arguments to some
   tested methods (those, that accept hash as argument, for example `merge!`),
 * *model_class* (optional) - a class which models expected Hash behaviour,
    by default `Puppet::SharedBehaviours::PTomulik::Vash::Hash` is used,

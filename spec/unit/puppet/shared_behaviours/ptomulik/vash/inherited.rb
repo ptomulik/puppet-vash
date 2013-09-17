@@ -26,25 +26,20 @@ module InheritedMod
     self.class.superclass.instance_method(:[]=).bind(self).call(key,value)
   end
 
-  def store(key, value)
-    begin 
-      key, value = vash_validate_item([key, value])
-    rescue Puppet::Util::PTomulik::Vash::VashArgumentError => err
-      raise err.class, err.to_s
-    end
-    # On 1.8 using 'super' breaks rspec tests :(.
-    self.class.superclass.instance_method(:store).bind(self).call(key,value)
-  end
+  alias_method :store, :[]=
 
+  # Similar to {Hash#select}
+  # @note On ruby  1.8. the {Hash#select} returns an array (or enumerator)
+  # and on 1.9.1+ returns hash (or enumerator). We always return hash or
+  # an enumerator.
+  #
+  # Note, that for standard Hash and its subclasses we have
+  # select{...}.class == Hash on ruby 1.9+.
   if ruby_version < 0x010901
-  # we don't have keep_if on ruby < 1.9.3
-  def select(&block)
-    self.dup.delete_if {|k,v| ! block.call(k,v) }
-  end
-  else
-  def select(&block)
-    self.dup.keep_if(&block)
-  end
+    def select(&block)
+      result = self.class.superclass.instance_method(:select).bind(self).call(&block)
+      block ? Hash[result] : result
+    end
   end
 
   def merge!(other, &block)
@@ -56,6 +51,8 @@ module InheritedMod
     # On 1.8 using 'super' breaks rspec tests :(.
     self.class.superclass.instance_method(:merge!).bind(self).call(other, &block)
   end
+
+  alias_method :update, :merge!
 
   def merge(other, &block)
     begin
@@ -74,21 +71,6 @@ module InheritedMod
     # On 1.8 using 'super' breaks rspec tests :(.
     self.class.superclass.instance_method(:replace).bind(self).call(other)
   end
-
-  # --
-  # On 1.8 alias_method doesn't play nicely with 'super' 
-  # (raises 'no superclass method'), so we don't use it.
-  # ++
-  def update(other, &block)
-    begin
-      other = vash_validate_hash(other)
-    rescue Puppet::Util::PTomulik::Vash::VashArgumentError => err
-      raise err.class, err.to_s
-    end
-    # On 1.8 using 'super' breaks rspec tests :(.
-    self.class.superclass.instance_method(:update).bind(self).call(other, &block)
-  end
-
 
   #
   # extra methods for ClassMethods

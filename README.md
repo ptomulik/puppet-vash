@@ -17,16 +17,16 @@
 
 ## Overview
 
-*Vash* (a validating hash) provides mixins to add
-[Hash](http://www.ruby-doc.org/core/Hash.html) methods to user class enabling
-simple validation and munging of data entering that hash.
+*Vash* (a validating hash) provides mixins to create
+[Hash](http://www.ruby-doc.org/core/Hash.html)-like classes with simple
+validation and munging of input data.
 
 # Module Description
 
-Vash provides mixins that add Hash interface to classes. The mixins allow you
-to enable simple data validation and munging, such that you may define
-restrictions on keys, values and pairs entering your hash and coalesce them
-at input.
+Vash provides mixins that add [Hash](http://www.ruby-doc.org/core/Hash.html)
+interface to receiving classes. The mixins allow you to enable simple data
+validation and munging, such that you may define restrictions on keys, values
+and pairs entering your hash and coalesce them at input.
 
 ## Beginning with vash
 
@@ -49,10 +49,13 @@ class MyVash < Hash
 end
 ```
 
-With the first pattern, hash data is keept in an instance variable
-`@vash_underlying_hash`. With second pattern the superclass of `MyVash` keeps
-hash data and it should already have `Hash` functionality (`Vash` only adds
-input validation and munging).
+With the first pattern, hash data is kept in an instance variable named
+`@vash_underlying_hash` and may be internally accessed via
+`vash_underlying_hash` private method.
+
+With second pattern the superclass of `MyVash` must provide `Hash` interface
+(read - it should be a subclass of standard
+[Hash](http://www.ruby-doc.org/core/Hash.html)).
 
 Once you have included `Vash::Contained` or `Vash::Inherited` module to your
 class, you may use it as ordinary Hash:
@@ -63,12 +66,11 @@ vash[:c] = :C
 # .. and so on
 ```
 
-There is no validation nor munging by default, so `MyVash` behaves exactly same
-way `Hash` does, accepting any input data and not modifying it.
-
-Simple validation may be added by defining `vash_valid_key?`,
-`vash_valid_value?` and `vash_valid_pair?` methods (note, all methods that are
-specific to Vash, have `vash_` prefix):
+The default rules for validation and munging are "allow anything" and "do not
+modify", so `MyVash` behaves exactly same way `Hash` does. Simple validation
+may be added by defining `vash_valid_key?`, `vash_valid_value?` and
+`vash_valid_pair?` methods (note, all methods that are specific to Vash, have
+`vash_` prefix):
 
 ```ruby
 require 'puppet/util/ptomulik/vash/contained'
@@ -97,18 +99,19 @@ subsections shall give more detailed explanations.
 
 ## Usage
 
-Custom Vashes may be created by including
-`Puppet::Util::PTomulik::Vash::Contained` or
-`Puppet::Util::PTomulik::Vash::Inherited` mixin to your class and then
+Custom Hash with validation and munging (call it "custom Vash") may be created
+by including `Puppet::Util::PTomulik::Vash::Contained` or
+`Puppet::Util::PTomulik::Vash::Inherited` module to your class and then
 overwriting some of its methods. It's also good to prepare some specs/tests for
-your customized class (see [Testing](#testing)).  We'll start with simple
-customized Vash in
+your customized class (see [Testing](#testing)). 
+
+We'll start with simple customized Vash in 
 [Example 3.1](#example-31-defining-restrictions-for-keys-and-values)
 and will continue extending it in subsequent examples.
 
 #### Example 3.1: Defining restrictions for keys and values
 
-Let's prepare simple container with integer variables:
+Let's prepare simple container for integer variables:
 
 ```ruby
 require 'puppet/util/ptomulik/vash/contained'
@@ -124,7 +127,7 @@ class Variables
 end
 ```
 
-Perform simple tests:
+When you perform simple experiments, you shall see:
 
 ```ruby
 vars = Variables['ten', 10, 'nine', 9]
@@ -138,12 +141,13 @@ vars['seven'] = '7'
 vars
 # => {"nine"=>9, "ten"=>10, "seven"=>"7"}
 ```
+
 #### Example 3.2: Munging keys and values
 
 The class from [Example 3.1](#example-31-defining-restrictions-for-keys-and-values)
 has one drawback - it doesn't convert values to integers. For example
 `vars['seven']` is `"7"` (a string). Value munging may be added to `Variables`
-in order to convert data provided by user to integers.
+in order to convert data provided by user.
 
 ```ruby
 class Variables
@@ -160,7 +164,7 @@ vars = Variables['seven','7']
 # => {"seven"=>7}
 ```
 
-We may also munge keys, for example convert camelCase names to under\_score:
+We may also munge keys, for example convert `camelCase` to `under\_score`:
 
 ```ruby
 class Variables
@@ -198,8 +202,8 @@ vars = Variables['lemonPrice', '-4']
 #### Example 3.4: Munging pairs
 
 We may also munge pairs entering our `Variables` container. In this example
-we'll append variable value to its name.
-
+we'll append variable value to its name, such that `vars['my_var'] = 1` will 
+result with variable `my_var1=1` being added to `Variables`:
 
 ```ruby
 class Variables
@@ -241,8 +245,8 @@ vars = Variables['lemonPrice', '-4']
 # InvalidPairError: invalid value for variable ("lemon_price",-4) at index 0
 ```
 
-The last message is still not well-formed. To correct this, we may reimplement
-`#vash_pair_exception`.
+The last message is still not well-formed. We may overwrite default
+`#vash_pair_exception` to have better effect:
 
 ```ruby
 class Variables
@@ -262,7 +266,11 @@ vars = Variables['lemonPrice', -1]
 
 ## Reference
 
-When new data enters `Vash`, the workflow is following:
+The detailed method documentation may be generated with *yardoc*. Here, we only
+present briefly how *Vash* works.
+
+When new data enters `Vash` (via `#[]=`, `#store` or any other method that
+modifies content of the underlying hash), the workflow is following:
 
 1. Input items are passed to `#vash_validate_item` (the term *item* is used
    for original `[key,value]` pair as entered by user).
@@ -283,11 +291,17 @@ When new data enters `Vash`, the workflow is following:
    added to Vash container.
 
 In any of these points, if the validation fails, an exception is raised. The
-`Vash` by default raises `Puppet::Util::PTomulik::Vash::InvalidKeyError`,
-`Puppet::Util::PTomulik::Vash::InvalidValueError` or
-`Puppet::Util::PTomulik::Vash::InvalidPairError`. All of them are subclasses of
-`::ArgumentError`.
+`Vash` by default raises following exceptions:
 
+* `Puppet::Util::PTomulik::Vash::InvalidKeyError` (key validation failed),
+* `Puppet::Util::PTomulik::Vash::InvalidValueError` (value validation failed),
+* `Puppet::Util::PTomulik::Vash::InvalidPairError` (pair validation failed).
+
+All the above exceptions are subclasses of 
+
+* `Puppet::Util::PTomulik::Vash::VashArgumentError`.
+
+which is a subclass of `::ArumentError`.
 
 ## Testing
 
@@ -307,15 +321,13 @@ bundle install --path vendor/bundle
 
 The module provides quite extensive set of rspec shared examples for
 developers. The tests are designed such that they compare behaviour of a
-subject class with a behaviour of an already-tested class (model) such as
-standard `Hash`.  Reusable *shared\_examples* are provided for developers who
-want to implement cusom `Vash` classes (these examples may be actually used to
-test any class that is supposed to behave as Hash, Vash::Validator or complete
-Vash).  If you're starting implementing your new *Vash* class, it's recommended
-to first prepare basic test that includes *Vash::Inherited* or
-*Vash::Contained* shared examples and run test each time you overwrite some of
+subject class with an already-tested (model) class (such as standard `Hash`).
+Reusable *shared\_examples* are provided for developers who want to implement
+custom *Vashes*. If you're starting your new *Vash* class, it's recommended to
+prepare simple test that includes *Vash::Inherited* or *Vash::Contained* shared
+examples and run test each time you overwrite some of
 *Vash::Contained*/*Vash::Inherited* or *Vash::Validator* methods. This shall
-quickly reveal any unexpected changes you've made to your class.
+quickly reveal any (unintended) changes introduced to your *Vash* behaviour.
 
 The shared examples may be found in following files:
 
@@ -352,6 +364,9 @@ end
 
 ```
 
+The above snippet shall generate about 700 test cases. Because `MyHash` has all
+the functionality of (its base class) `Hash`, we expect all tests to pass. 
+
 The `:sample_items` array is used to initialize hash during the tests and also
 to generate input arguments to some hash functions (keys/values from
 `sample_items` may be used as `existing_key` and `existing_value`). The
@@ -359,9 +374,6 @@ to generate input arguments to some hash functions (keys/values from
 an argument (e.g. `merge!`). The `:missing_key` and `:missing_value` are sample
 key and value that are correct (should pass key/value and pair validation) but
 is not present in `:sample_items`.
-
-The above snippet shall generate about 700 test cases. Because `MyHash` has all
-the functionality of (its base class) `Hash`, we expect all tests to pass. 
 
 #### Example 6.2
 
@@ -399,17 +411,15 @@ describe MyHash do
 end
 ```
 
-In the above snippet, we've told, that *MyHash* class behaves mostly as the
-clean *Vash::Inherited* should behave, with one small exception - we have
-overwritten `vash_valid_key?` method and this is indicated by
-*:vash_valid_key?* parameter (this way we indicate deviations of `MyHash` class
-from basic behavior).
+In the above snippet, we've indicated that *MyHash* has the behaviour of
+*Vash::Inherited*, but the `vash_valid_key?` method was overridden. We indicate
+this by setting *:vash_valid_key?* parameter in *:methods*.
 
 ### Shared examples reference
 
 #### *Vash::Hash* shared examples
 
-Ensure that a class provides all functionalities of the standard `Hash`.
+Ensures that a class behaves like standard `Hash`.
 
 *Synopsis*:
 
@@ -417,7 +427,7 @@ Ensure that a class provides all functionalities of the standard `Hash`.
 it_behaves_like 'Vash::Hash', params
 ```
 
-where `params` is a Hash with parameters for test driver.
+The `params` is a Hash with parameters used by test driver.
 
 *Example usage*:
 
@@ -550,13 +560,13 @@ See comments in source code: *spec/unit/puppet/shared_behaviours/ptomulik/vash/v
 
 #### *Vash::Contained* and *Vash::Inherited* shared examples
 
-Any of *Vash::Contained* or *VAsh::Inherited* combines *Vash:Hash* and
-*Vash::Validator* into one suite of shared exampled.
+The *Vash::Contained* (or *Vash::Inherited*) combines *Vash:Hash* and
+*Vash::Validator* shared examples into single set of shared examples.
 
 *Synopsis*
 
 ```ruby
-it_behaves_like 'Vash::Inherited', params
+it_behaves_like 'Vash::Contained', params
 ```
 
 or
@@ -566,10 +576,10 @@ it_behaves_like 'Vash::Inherited', params
 ```
 
 where `params` is a Hash of mixed parameters to `Vash::Hash` and
-`Vash::Validator`. Note, that you don't have to define *sample_items*, because
-they are internally generated from *valid_items* and *invalid_items*. The
-*hash_initializers*, if provided, must consists only of valid items or your
-tests will fail.
+`Vash::Validator` behaviours. Note, that you don't have to define
+*sample_items*, because they are internally generated from *valid_items* and
+*invalid_items*. The *hash_initializers*, if provided, must consists only of
+valid items or your tests will fail.
 
 ## Development
 

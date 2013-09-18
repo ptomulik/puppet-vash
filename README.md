@@ -548,18 +548,28 @@ end
 
 See comments in source code: *spec/unit/puppet/shared_behaviours/ptomulik/vash/validator.rb*.
 
-#### *Vash* shared examples
+#### *Vash::Contained* and *Vash::Inherited* shared examples
 
-Combined *Vash:Hash* and *Vash::Validator* into one shared example.
+Any of *Vash::Contained* or *VAsh::Inherited* combines *Vash:Hash* and
+*Vash::Validator* into one suite of shared exampled.
 
 *Synopsis*
 
 ```ruby
-it_behaves_like 'Vash', params
+it_behaves_like 'Vash::Inherited', params
 ```
+
+or
+
+```ruby
+it_behaves_like 'Vash::Inherited', params
+```
+
 where `params` is a Hash of mixed parameters to `Vash::Hash` and
 `Vash::Validator`. Note, that you don't have to define *sample_items*, because
-they are internally generated from *valid_items* and *invalid_items*.
+they are internally generated from *valid_items* and *invalid_items*. The
+*hash_initializers*, if provided, must consists only of valid items or your
+tests will fail.
 
 ## Development
 

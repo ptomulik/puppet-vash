@@ -1,4 +1,5 @@
 2013-09-18 Pawel Tomulik <ptomulik@meil.pw.edu.pl>
+  * version 0.1.3
   * revised README.md
   * fixed documentation for shared examples in README.md
   * removed trailing whitespaces from source code

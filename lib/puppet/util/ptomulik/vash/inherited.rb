@@ -6,7 +6,6 @@ module Inherited
 
   require 'forwardable'
   include ::Enumerable
-  extend ::Forwardable
 
   require 'puppet/util/ptomulik/vash/validator'
   include Validator
@@ -34,8 +33,8 @@ module Inherited
   # and on 1.9.1+ returns hash (or enumerator). We always return hash or
   # an enumerator.
   #
-  # Note, that for standard Hash and its subclasses we have
-  # select{...}.class == Hash on ruby 1.9+.
+  # Note, that for Hash and its subclasses we have select{...}.class == Hash
+  # on ruby 1.9+.
   if ruby_version < 0x010901
     def select(&block)
       result = self.class.superclass.instance_method(:select).bind(self).call(&block)

@@ -4,22 +4,6 @@ module Puppet::SharedBehaviours; module PTomulik; module Vash; end; end; end
 
 module Puppet::SharedBehaviours::PTomulik::Vash
 
-  # Class methods for {Puppet:Util::PTomulik::Vash::Contained}
-  # and {Puppet::Util::PTomulik::Vash::Inherited}.
-  #
-  # Currently the following methods are added:
-  #
-  # - ::[]
-  # - ::new
-  #
-  # Requires the following instance methods to be defined in extended class:
-  #
-  # - `#replace_with_array(array)`
-  # - `#replace_with_pairs(array)`
-  # - `#replace(hash)`
-  #
-  # The abovementioned methods are also responsible for input validation and
-  # munging.
   module ClassMethodsMod
 
     # Same as Hash::[] but with input validation.

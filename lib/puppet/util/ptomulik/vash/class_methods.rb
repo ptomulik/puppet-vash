@@ -9,7 +9,6 @@ module Puppet::Util::PTomulik::Vash
   # Currently the following methods are added:
   #
   # - ::[]
-  # - ::new
   #
   # Requires the following instance methods to be defined in extended class:
   #

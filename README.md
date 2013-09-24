@@ -116,6 +116,7 @@ Let's prepare simple container for integer variables:
 ```ruby
 require 'puppet/util/ptomulik/vash/contained'
 class Variables
+  include Puppet::Util::PTomulik::Vash::Contained
   # accept only valid identifiers as keys
   def vash_valid_key?(key)
     key.is_a?(String) and (key=~/^[a-zA-Z]\w*$/)
@@ -326,14 +327,15 @@ Reusable *shared\_examples* are provided for developers who want to implement
 custom *Vashes*. If you're starting your new *Vash* class, it's recommended to
 prepare simple test that includes *Vash::Inherited* or *Vash::Contained* shared
 examples and run test each time you overwrite some of
-*Vash::Contained*/*Vash::Inherited* or *Vash::Validator* methods. This shall
+`Vash::Contained`, `Vash::Inherited` or `Vash::Validator` methods. This shall
 quickly reveal any (unintended) changes introduced to your *Vash* behaviour.
 
 The shared examples may be found in following files:
 
 * *spec/unit/puppet/shared_behaviours/ptomulik/vash/hash.rb*
 * *spec/unit/puppet/shared_behaviours/ptomulik/vash/validator.rb*
-* *spec/unit/puppet/shared_behaviours/ptomulik/vash.rb*
+* *spec/unit/puppet/shared_behaviours/ptomulik/vash/contained.rb*
+* *spec/unit/puppet/shared_behaviours/ptomulik/vash/inherited.rb*
 
 #### Example 6.1
 
@@ -365,7 +367,7 @@ end
 ```
 
 The above snippet shall generate about 700 test cases. Because `MyHash` has all
-the functionality of (its base class) `Hash`, we expect all tests to pass. 
+the functionality of `Hash`, we expect all tests to pass. 
 
 The `:sample_items` array is used to initialize hash during the tests and also
 to generate input arguments to some hash functions (keys/values from

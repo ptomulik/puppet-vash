@@ -1,3 +1,7 @@
+2013-09-27 Pawel Tomulik <ptomulik@meil.pw.edu.pl>
+  * several minor fixes
+2013-09-19 Pawel Tomulik <ptomulik@meil.pw.edu.pl>
+  * removed ::Forwardable from Vash::Inherited
 2013-09-18 Pawel Tomulik <ptomulik@meil.pw.edu.pl>
   * version 0.1.3
   * revised README.md

@@ -10,7 +10,7 @@ module Puppet::Util::PTomulik::Vash
   #
   # - ::[]
   #
-  # Requires the following instance methods to be defined in extended class:
+  # Requires the following instance methods to be defined in receiver class:
   #
   # - `#replace_with_flat_array(array)`
   # - `#replace_with_item_array(array)`

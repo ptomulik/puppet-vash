@@ -1,3 +1,6 @@
+2013-11-29 Pawel Tomulik <ptomulik@meil.pw.edu.pl>
+  * version 0.1.5
+  * fixed failing CI build on ruby 1.8 (added depenency on mime-types ~> 1.25)
 2013-09-30 Pawel Tomulik <ptomulik@meil.pw.edu.pl>
   * corrected project's URL in Modulefile
 2013-09-27 Pawel Tomulik <ptomulik@meil.pw.edu.pl>

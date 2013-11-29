@@ -1,5 +1,5 @@
 name    'ptomulik-vash'
-version '0.1.4'
+version '0.1.5'
 source 'git://github.com/ptomulik/puppet-vash.git'
 author 'ptomulik'
 license 'Apache License, Version 2.0'

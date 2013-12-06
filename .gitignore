@@ -21,4 +21,6 @@ vendor
 /doc
 # Coverage data
 /coverage
+# Scripts output
+.tmp/
 # vim: set syntax=conf:

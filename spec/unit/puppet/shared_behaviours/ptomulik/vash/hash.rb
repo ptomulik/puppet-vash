@@ -15,13 +15,14 @@ def enumerator_class
   end
 end
 
-def key_error_class
+def key_error_from_fetch
   begin
-    KeyError
-  rescue NameError
-    IndexError
+    {}.fetch('x')
+  rescue => e
+    e.class
   end
 end
+
 
 RSpec::Matchers.define :be_instance_of_one_of do |expected|
   unless expected.is_a?(Array)
@@ -65,8 +66,7 @@ RSpec::Matchers.define :be_enumerator_equivalent_to do |expected|
   end
 end
 
-module Puppet; module SharedBehaviours; module PTomulik; module Vash;
-end; end; end; end
+module Puppet; module SharedBehaviours; module PTomulik; module Vash; end; end; end; end
 
 class Puppet::SharedBehaviours::PTomulik::Vash::Hash < ::Hash
   def self.to_s; 'Hash'; end
@@ -541,7 +541,7 @@ shared_examples 'Vash::Hash' do |_params|
       :raises => [ArgumentError]
     },
     :fetch    => {
-      :raises => [key_error_class]
+      :raises => [key_error_from_fetch]
     },
   }
 

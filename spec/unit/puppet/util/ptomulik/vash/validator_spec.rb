@@ -33,9 +33,9 @@ end
 describe Vash_Validator_Customized do
   it_behaves_like "Vash::Validator", {
     :valid_keys          => [  0,  -1,'-1', 0.2 ],
-    :invalid_keys        => [ 'a', {}, [] ],
+    :invalid_keys        => [ 'a', {}, [1] ],
     :valid_values        => [  0,  -1,'-1', 0.2 ],
-    :invalid_values      => [ 'a', {}, [] ],
+    :invalid_values      => [ 'a', {}, [1] ],
     :valid_pairs         => [ [1,1], [2,4], [3,9] ],
     :invalid_pairs       => [ [1,2], [2,1] ],
     :valid_items         => [ [2,4], ['3','9'] ],

@@ -28,7 +28,9 @@ function do_convert {
     done
   cp "${SOURCE}/README.md" "${TARGET}/lib/puppet/util/vash/"
   find "${TARGET}/lib/puppet" "${TARGET}/spec" -type f | grep -v '\.swp$' | xargs sed -i \
-      -e '/^\s*#\s*PACKAGEX_EXTRA_START/,/^\s*#\s*PACKAGEX_EXTRA_END/d' \
+      -e '/^\s*#\s*VASH_DELETE_START/,/^\s*#\s*VASH_DELETE_END/d' \
+      -e '/^\s*#\s*VASH_COMMENTOUT_START/,/^\s*#\s*VASH_COMMENTOUT_END/s/^/##/' \
+      -e '/^\s*##\s*VASH_UNCOMMENT_START/,/^\s*##\s*VASH_UNCOMMENT_END/s/^#//' \
       -e 's/PTomulik::Vash/Vash/g' \
       -e 's/ptomulik\/vash/vash/g' \
       -e 's/util\/ptomulik/util/g' \
@@ -39,4 +41,4 @@ function do_convert {
 }
 
 (cd $ROOT && do_convert)
-echo "conversion complete, results went to ${TARGET}"
+echo "conversion complete, results went to ${ROOT}/${TARGET}"

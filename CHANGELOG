@@ -1,4 +1,5 @@
 2017-01-26 Pawel Tomulik <ptomulik@meil.pw.edu.pl>
+  * fix .gitignore to exclude vendor/ dir from puppet module build process
   * release 0.1.7
 2017-01-26 Tim Meusel @bastelfreak <tim@bastelfreak.de>
   * migrate Modulefile to metadata.json

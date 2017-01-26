@@ -1,0 +1,12 @@
+{
+  "name": "ptomulik-vash",
+  "version": "0.1.6",
+  "author": "ptomulik",
+  "summary": "Hash with input validation",
+  "license": "Apache-2",
+  "source": "https://github.com/ptomulik/puppet-vash.git",
+  "project_page": "https://github.com/ptomulik/puppet-vash",
+  "issues_url": "https://github.com/ptomulik/puppet-vash/issues",
+  "description": "This is a ruby module which adds hash functions to an including class and allows for simple input validation and munging.",
+  "dependencies": []
+}

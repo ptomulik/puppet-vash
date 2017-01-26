@@ -164,7 +164,7 @@ shared_examples 'Vash::Validator#vash_valid_single?' do |_params|
   let(:validator) { _params[:validator] }
   let(:is_valid)  { _is_valid }
 
-  [[:valid, :be_true], [:invalid, :be_false]].each do |_state, _return_value|
+  [[:valid, :be_truthy], [:invalid, :be_falsey]].each do |_state, _return_value|
     _samples = _params["#{_state}_samples".intern]
     _samples.each do |_sample|
       context "with #{_type}=#{_sample.inspect} (#{_state})" do

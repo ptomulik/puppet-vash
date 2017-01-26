@@ -119,7 +119,12 @@ class HashReturnTypes
   def merge!(other,&block); [@subject_class]; end
   def rassoc(obj); [Array,NilClass]; end
   def rehash; [@subject_class]; end
+  if (ruby_version >= 0x020200) || (ruby_version == 0x020101)
+  # https://www.ruby-lang.org/en/news/2014/03/10/regression-of-hash-reject-in-ruby-2-1-1/
+  def reject(&block); (block ? [Hash] : [enumerator_class]); end
+  else
   def reject(&block); (block ? [@subject_class] : [enumerator_class]); end
+  end
   def reject!(&block); (block ? [@subject_class,NilClass] : [enumerator_class]); end
   def replace(other); [@subject_class]; end
   if ruby_version >= 0x010901

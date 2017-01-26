@@ -174,9 +174,24 @@ module Contained
   end
 
   # Same as {Hash#reject}
+  # @note On ruby <2.2. the {#reject} returns an instance of Hash subclass (or
+  # enumerator) and on >= 2.2 returns a Hash (or enumerator). We follow this
+  # behaviour in Vash::Contained. I'm still in doubt, however, because
+  # Vash::Contained is used by classes that are not sub-classing Hash. So,
+  # not sure it's 100% right decision.
+  #
+  # Note, that for standard Hash and its subclasses we have
+  # select{...}.class == Hash on ruby 1.9+.
+  if ruby_version < 0x020200
   def reject(&block)
     # note, using original 'reject' is more difficult here.
     self.dup.delete_if(&block)
+  end
+  else
+  def reject(&block)
+    # note, using original 'reject' is more difficult here.
+    vash_underlying_hash.reject(&block)
+  end
   end
 
   # Same as {Hash#reject!}
